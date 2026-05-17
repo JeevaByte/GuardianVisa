@@ -1,0 +1,62 @@
+[
+  {
+    "_id": "student_001",
+    "_simulated": true,
+    "student_id_number": "S2024-MAN-7821",
+    "name": "Priya Sharma",
+    "nationality": "Indian",
+    "course": "MSc Data Science",
+    "university": "University of Manchester",
+    "city": "Manchester",
+    "visa_type": "Tier 4 Student Visa",
+    "visa_expiry": "2027-08-31",
+    "term_dates": {
+      "start": "2026-01-20",
+      "end": "2026-06-10"
+    },
+    "work_hours_this_week": 18,
+    "work_limit_term": 20,
+    "work_limit_holiday": 40,
+    "emergency_contact_email": "priya.sharma.guardian@simulated.example.com"
+  },
+  {
+    "_id": "student_002",
+    "_simulated": true,
+    "student_id_number": "S2024-UCL-4453",
+    "name": "Amir Hassan",
+    "nationality": "Egyptian",
+    "course": "MEng Computer Engineering",
+    "university": "University College London",
+    "city": "London",
+    "visa_type": "Tier 4 Student Visa",
+    "visa_expiry": "2026-12-15",
+    "term_dates": {
+      "start": "2026-01-15",
+      "end": "2026-06-05"
+    },
+    "work_hours_this_week": 12,
+    "work_limit_term": 20,
+    "work_limit_holiday": 40,
+    "emergency_contact_email": "amir.hassan.guardian@simulated.example.com"
+  },
+  {
+    "_id": "student_003",
+    "_simulated": true,
+    "student_id_number": "S2024-EDIN-9102",
+    "name": "Sofia Nguyen",
+    "nationality": "Vietnamese",
+    "course": "MBA",
+    "university": "University of Edinburgh",
+    "city": "Edinburgh",
+    "visa_type": "Tier 4 Student Visa",
+    "visa_expiry": "2027-05-30",
+    "term_dates": {
+      "start": "2026-09-01",
+      "end": "2026-12-20"
+    },
+    "work_hours_this_week": 0,
+    "work_limit_term": 20,
+    "work_limit_holiday": 40,
+    "emergency_contact_email": "sofia.nguyen.guardian@simulated.example.com"
+  }
+]

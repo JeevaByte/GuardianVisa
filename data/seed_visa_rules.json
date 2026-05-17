@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "visa_rule_001",
+    "_simulated": true,
+    "visa_type": "Tier 4 Student Visa",
+    "country": "United Kingdom",
+    "term_work_limit_hours": 20,
+    "holiday_work_limit_hours": 40,
+    "violation_consequence": "Visa cancellation, removal from UK, potential 10-year re-entry ban",
+    "notes": "Applies during official university term dates. Students must not work more than 20 hours per week during term, including all paid and voluntary work. Hours are cumulative across multiple employers.",
+    "source": "UK Visas and Immigration — Tier 4 (General) Student Visa guidance (simulated reference)",
+    "last_updated": "2025-01-01"
+  },
+  {
+    "_id": "visa_rule_002",
+    "_simulated": true,
+    "visa_type": "Graduate Route Visa",
+    "country": "United Kingdom",
+    "term_work_limit_hours": null,
+    "holiday_work_limit_hours": null,
+    "violation_consequence": "None — no work restriction applies",
+    "notes": "No work restriction. Holders of the Graduate Route visa may work in any role, any hours, for any employer. Does not permit self-employment or business ownership in all cases — confirm with UKVI.",
+    "source": "UK Visas and Immigration — Graduate Route guidance (simulated reference)",
+    "last_updated": "2025-01-01"
+  },
+  {
+    "_id": "visa_rule_003",
+    "_simulated": true,
+    "visa_type": "Tier 4 General — Pre-sessional",
+    "country": "United Kingdom",
+    "term_work_limit_hours": 10,
+    "holiday_work_limit_hours": 40,
+    "violation_consequence": "Visa curtailment and potential removal from UK",
+    "notes": "Pre-sessional English language course students have a reduced term-time work limit of 10 hours per week. Standard holiday allowance of 40 hours applies during official university vacation periods.",
+    "source": "UK Visas and Immigration — Pre-sessional course guidance (simulated reference)",
+    "last_updated": "2025-01-01"
+  },
+  {
+    "_id": "visa_rule_004",
+    "_simulated": true,
+    "visa_type": "F-1 Student Visa",
+    "country": "United States of America",
+    "term_work_limit_hours": 20,
+    "holiday_work_limit_hours": null,
+    "violation_consequence": "Visa cancellation, SEVIS termination, deportation",
+    "notes": "During term, students may work up to 20 hours per week on-campus only. Off-campus employment during term requires Curricular Practical Training (CPT) or Economic Hardship authorisation. During official school breaks and summer vacation, full-time on-campus work is permitted with no hourly cap. Optional Practical Training (OPT) provides separate post-graduation work rights.",
+    "source": "US Immigration and Customs Enforcement — SEVP F-1 student guidance (simulated reference)",
+    "last_updated": "2025-01-01"
+  }
+]

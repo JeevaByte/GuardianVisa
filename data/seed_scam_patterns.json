@@ -1,0 +1,106 @@
+[
+  {
+    "_id": "scam_001",
+    "_simulated": true,
+    "pattern": "cash_only_upfront",
+    "risk_level": "HIGH",
+    "description": "Landlord requests full payment — deposit plus multiple months of rent — before the tenant has viewed the property or signed any agreement.",
+    "advice": "Never pay any money before viewing a property in person and receiving a signed tenancy agreement. Legitimate landlords and agencies do not require full payment upfront before a viewing.",
+    "keywords": ["cash only", "full payment", "upfront", "before viewing", "pay now", "transfer first", "send money", "bank transfer before"],
+    "examples": [
+      "Send the first three months rent and deposit to secure the property before we arrange the viewing.",
+      "The landlord only accepts cash. Pay in full and the keys will be posted to you."
+    ]
+  },
+  {
+    "_id": "scam_002",
+    "_simulated": true,
+    "pattern": "no_viewing_allowed",
+    "risk_level": "HIGH",
+    "description": "The property is listed but viewings are refused or blocked, often with excuses such as current tenants, renovation, or remote landlord.",
+    "advice": "Always insist on viewing a property before paying any deposit. If a landlord refuses a viewing for any reason, treat this as a strong scam signal and walk away.",
+    "keywords": ["no viewing", "cannot view", "viewing not possible", "tenant still in", "renovating", "trust me", "photos only", "virtual tour only"],
+    "examples": [
+      "Sorry, the current tenant is still moving out. Just pay the holding deposit and I will arrange keys.",
+      "We only do virtual viewings. The photos are very accurate — you will love it."
+    ]
+  },
+  {
+    "_id": "scam_003",
+    "_simulated": true,
+    "pattern": "overseas_landlord",
+    "risk_level": "MEDIUM",
+    "description": "The landlord claims to be abroad — on a mission, working overseas, or travelling — and cannot meet in person, show the property, or hand over keys directly.",
+    "advice": "An overseas landlord is not automatically a scammer, but it is a common cover story. Verify ownership via the Land Registry, ask for video call identification, and use a solicitor or reputable letting agent for any transaction.",
+    "keywords": ["abroad", "overseas", "missionary", "working away", "not in the UK", "send keys", "courier the keys", "God-fearing", "trusted agent"],
+    "examples": [
+      "I am currently on a missionary trip in Ghana. My agent will courier the keys once payment is confirmed.",
+      "I am a surgeon working in the US right now. I will post the keys once you transfer the deposit."
+    ]
+  },
+  {
+    "_id": "scam_004",
+    "_simulated": true,
+    "pattern": "too_cheap",
+    "risk_level": "MEDIUM",
+    "description": "The rental price is significantly and suspiciously below the market rate for the area and property type, often used to attract desperate or budget-constrained students.",
+    "advice": "Check comparable properties on Rightmove, Zoopla, or SpareRoom. If a listing is more than 20–30% cheaper than similar properties in the same postcode, investigate carefully before proceeding.",
+    "keywords": ["great deal", "special price", "cheap", "affordable", "below market", "discounted", "just for students", "hurry", "special offer"],
+    "examples": [
+      "3-bedroom flat in central London, £400/month all bills included — available immediately.",
+      "Special student price for a lovely double room in Zone 2, only £350pcm."
+    ]
+  },
+  {
+    "_id": "scam_005",
+    "_simulated": true,
+    "pattern": "urgency_pressure",
+    "risk_level": "HIGH",
+    "description": "The landlord or agent creates artificial urgency, claiming multiple other interested parties or that the offer expires within hours, pressuring the tenant into paying without proper due diligence.",
+    "advice": "Legitimate rentals do not require same-day decisions under pressure. If someone is rushing you to pay before you have viewed or received paperwork, this is a red flag. Take your time.",
+    "keywords": ["must decide today", "other applicants", "going fast", "last chance", "only today", "reserve now", "pay to hold", "lose the property", "final offer"],
+    "examples": [
+      "I have five other people interested. You must pay the deposit today or I will give it to someone else.",
+      "This offer is only valid until midnight tonight. Don't miss out — it is the best deal in Manchester."
+    ]
+  },
+  {
+    "_id": "scam_006",
+    "_simulated": true,
+    "pattern": "whatsapp_only",
+    "risk_level": "MEDIUM",
+    "description": "All communication is restricted to WhatsApp or similar messaging apps, with no formal email, no agency letterhead, no phone call, and no written contract provided.",
+    "advice": "Reputable landlords and letting agents communicate via verifiable channels — email, phone, formal letters. WhatsApp-only communication makes it difficult to verify identity and creates no audit trail for disputes.",
+    "keywords": ["WhatsApp only", "message me", "text me", "DM only", "no email", "contact on WhatsApp", "send on WhatsApp", "chat only"],
+    "examples": [
+      "I do not use email. Please contact me only on WhatsApp for all correspondence.",
+      "All details will be sent via WhatsApp. No formal contract needed — we trust each other."
+    ]
+  },
+  {
+    "_id": "scam_007",
+    "_simulated": true,
+    "pattern": "no_tenancy_agreement",
+    "risk_level": "DANGER",
+    "description": "The landlord refuses to provide a written Assured Shorthold Tenancy (AST) agreement or any formal written contract, claiming it is unnecessary or asking for a verbal arrangement.",
+    "advice": "In England, Scotland, and Wales, a written tenancy agreement is standard and legally protects both parties. Never move in or pay any money without a signed AST. Without one, you have very limited legal protection.",
+    "keywords": ["no contract needed", "verbal agreement", "handshake deal", "trust based", "no paperwork", "informal", "no tenancy agreement", "no AST"],
+    "examples": [
+      "I do not bother with contracts — it is just extra hassle. We can do this on a trust basis.",
+      "My previous tenants never needed a written agreement. Just pay the deposit and move in."
+    ]
+  },
+  {
+    "_id": "scam_008",
+    "_simulated": true,
+    "pattern": "fake_agency",
+    "risk_level": "DANGER",
+    "description": "A fraudulent letting agency presents itself as legitimate but is not registered with Propertymark, ARLA, The Property Ombudsman, or another recognised UK redress scheme.",
+    "advice": "Always verify any letting agency on the Propertymark or ARLA register before paying fees or signing contracts. Check Companies House for registration. Look for a physical office address and search for independent reviews.",
+    "keywords": ["licensed agency", "registered agent", "certified", "ARLA member", "Propertymark", "trusted agency", "fully accredited", "official agent"],
+    "examples": [
+      "We are a fully licensed and ARLA-certified agency — (but not actually listed on any register).",
+      "Our agency handles hundreds of properties. Pay the admin fee and we will process your application."
+    ]
+  }
+]
