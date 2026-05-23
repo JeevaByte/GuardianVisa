@@ -36,13 +36,18 @@ log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    try:
-        await db.get_client().admin.command("ping")
-        log.info("MongoDB connection established.")
-    except Exception as exc:
-        log.warning("MongoDB not reachable at startup: %s", exc)
+    client = db.get_client()
+    if client is not None:
+        try:
+            await client.admin.command("ping")
+            log.info("MongoDB connection established.")
+        except Exception as exc:
+            log.warning("MongoDB not reachable at startup: %s", exc)
+    else:
+        log.info("Starting without MongoDB (mock/fallback mode).")
     yield
-    db.get_client().close()
+    if client is not None:
+        client.close()
 
 
 # ---------------------------------------------------------------------------

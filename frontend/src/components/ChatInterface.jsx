@@ -8,9 +8,9 @@ const PLACEHOLDERS = {
 }
 
 const ENDPOINTS = {
-  visa: '/api/analyse/visa-risk',
-  scam: '/api/analyse/scam',
-  emergency: '/api/analyse/emergency',
+  visa: '/api/check',
+  scam: '/api/scan-scam',
+  emergency: '/api/emergency',
 }
 
 const MODE_LABELS = {
@@ -34,7 +34,7 @@ export default function ChatInterface({ mode, onResult, onLoading, loading }) {
         mode === 'visa'
           ? { message: text, student_id: 'priya_sharma_demo' }
           : mode === 'scam'
-          ? { listing_text: text, student_id: 'priya_sharma_demo' }
+          ? { text: text, student_id: 'priya_sharma_demo' }
           : { situation: text, student_id: 'priya_sharma_demo' }
 
       const { data } = await axios.post(ENDPOINTS[mode], payload)

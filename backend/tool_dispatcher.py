@@ -110,23 +110,19 @@ async def run_agent_turn(
         model = None
 
     if model is None:
-        # Vertex AI unavailable – signal the caller to use mock data.
+        # LLM unavailable – signal the caller to use mock data.
         return AgentTurnResult(final_text=None, tool_calls=[], used_mock=True)
 
     try:
-        from vertexai.generative_models import (  # noqa: PLC0415
-            Content,
-            GenerationConfig,
-            Part,
-        )
+        import llm  # noqa: PLC0415
 
-        generation_config = GenerationConfig(
+        generation_config = llm.make_generation_config(
             temperature=0.2,
             max_output_tokens=1500,
         )
 
         # Start a multi-turn chat session so we can inject tool results.
-        chat = model.start_chat()
+        chat = llm.start_chat(model)
 
         # Optionally prime the context with the student's profile if we have
         # the ID but the caller hasn't explicitly asked for it in the prompt.
@@ -134,14 +130,14 @@ async def run_agent_turn(
         if student_id and "student_id" not in prompt.lower():
             initial_message = f"[Student ID: {student_id}]\n\n{prompt}"
 
-        response = chat.send_message(
-            initial_message,
+        response = llm.send_message(
+            chat, initial_message,
             generation_config=generation_config,
         )
 
         for iteration in range(MAX_TOOL_ITERATIONS):
             # Check if Gemini has requested a function call.
-            fn_call = _extract_function_call(response)
+            fn_call = llm.extract_function_call(response)
 
             if fn_call is None:
                 # No function call – Gemini returned a final text response.
@@ -163,15 +159,16 @@ async def run_agent_turn(
             tool_calls.append(ToolCallRecord(name=name, args=args, result=result))
 
             # Send the function result back to Gemini.
-            response = chat.send_message(
-                Part.from_function_response(name=name, response=result),
+            response = llm.send_message(
+                chat,
+                llm.make_function_response_part(name=name, response=result),
                 generation_config=generation_config,
             )
 
         # Extract the final text from the last response.
-        final_text = _extract_text(response)
+        final_text = llm.extract_text(response)
 
-        if iteration == MAX_TOOL_ITERATIONS - 1 and _extract_function_call(response):
+        if iteration == MAX_TOOL_ITERATIONS - 1 and llm.extract_function_call(response):
             log.warning(
                 "Agent loop hit MAX_TOOL_ITERATIONS (%d) without resolving.",
                 MAX_TOOL_ITERATIONS,
@@ -189,50 +186,7 @@ async def run_agent_turn(
 
 
 # ---------------------------------------------------------------------------
-# Vertex AI response helpers
+# LLM response helpers (delegated to llm.py)
 # ---------------------------------------------------------------------------
 
-def _extract_function_call(response) -> Optional[dict]:
-    """
-    Return {"name": str, "args": dict} if the response contains a function
-    call part, otherwise return None.
-    """
-    try:
-        for candidate in response.candidates:
-            for part in candidate.content.parts:
-                if hasattr(part, "function_call") and part.function_call:
-                    fc = part.function_call
-                    # args is a proto MapComposite; convert to plain dict.
-                    args = dict(fc.args) if fc.args else {}
-                    # Recursively convert nested proto structures.
-                    args = _proto_to_dict(args)
-                    return {"name": fc.name, "args": args}
-    except Exception as exc:
-        log.debug("Could not extract function call: %s", exc)
-    return None
-
-
-def _extract_text(response) -> Optional[str]:
-    """Return the concatenated text from all text parts in the response."""
-    try:
-        parts = []
-        for candidate in response.candidates:
-            for part in candidate.content.parts:
-                if hasattr(part, "text") and part.text:
-                    parts.append(part.text)
-        return "".join(parts) if parts else None
-    except Exception as exc:
-        log.debug("Could not extract text: %s", exc)
-        return None
-
-
-def _proto_to_dict(value):
-    """
-    Recursively convert proto MapComposite / ListComposite structures to
-    plain Python dicts and lists so they are JSON-serialisable.
-    """
-    if hasattr(value, "items"):
-        return {k: _proto_to_dict(v) for k, v in value.items()}
-    if isinstance(value, list):
-        return [_proto_to_dict(v) for v in value]
-    return value
+# _extract_function_call, _extract_text, _proto_to_dict are now in llm.py

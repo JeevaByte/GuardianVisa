@@ -1,31 +1,44 @@
 """
 MongoDB async client for GuardianVisa.
 All collections live in the "guardianvisa" database.
+Gracefully falls back to empty results when MongoDB is unreachable.
 """
 
+import logging
 import os
 from typing import Optional
-from motor.motor_asyncio import AsyncIOMotorClient
+
 from dotenv import load_dotenv
+from motor.motor_asyncio import AsyncIOMotorClient
 
 load_dotenv()
+
+log = logging.getLogger(__name__)
 
 MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 DB_NAME = "guardianvisa"
 
-# Module-level client — created once, reused across requests.
 _client: Optional[AsyncIOMotorClient] = None
+_mongo_available: bool = True
 
 
-def get_client() -> AsyncIOMotorClient:
-    global _client
+def get_client() -> Optional[AsyncIOMotorClient]:
+    global _client, _mongo_available
     if _client is None:
-        _client = AsyncIOMotorClient(MONGODB_URI)
+        try:
+            _client = AsyncIOMotorClient(MONGODB_URI)
+        except Exception as exc:
+            log.warning("MongoDB connection failed (%s); running without database", exc)
+            _mongo_available = False
+            _client = None
     return _client
 
 
 def get_db():
-    return get_client()[DB_NAME]
+    client = get_client()
+    if client is None:
+        return None
+    return client[DB_NAME]
 
 
 # ---------------------------------------------------------------------------
@@ -33,10 +46,18 @@ def get_db():
 # ---------------------------------------------------------------------------
 
 async def get_student_profile(student_id: str) -> Optional[dict]:
-    """Return the student document or None if not found."""
-    db = get_db()
-    doc = await db.students.find_one({"student_id": student_id}, {"_id": 0})
-    return doc
+    """Return the student document or None if not found / unavailable."""
+    if not _mongo_available:
+        return None
+    try:
+        db = get_db()
+        if db is None:
+            return None
+        doc = await db.students.find_one({"student_id": student_id}, {"_id": 0})
+        return doc
+    except Exception as exc:
+        log.warning("get_student_profile failed: %s", exc)
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -45,9 +66,17 @@ async def get_student_profile(student_id: str) -> Optional[dict]:
 
 async def get_visa_rules(visa_type: str) -> Optional[dict]:
     """Return visa-rule document for the given visa type (e.g. 'Tier 4')."""
-    db = get_db()
-    doc = await db.visa_rules.find_one({"visa_type": visa_type}, {"_id": 0})
-    return doc
+    if not _mongo_available:
+        return None
+    try:
+        db = get_db()
+        if db is None:
+            return None
+        doc = await db.visa_rules.find_one({"visa_type": visa_type}, {"_id": 0})
+        return doc
+    except Exception as exc:
+        log.warning("get_visa_rules failed: %s", exc)
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -57,14 +86,22 @@ async def get_visa_rules(visa_type: str) -> Optional[dict]:
 async def get_work_logs(student_id: str, week_start: str) -> list:
     """
     Return work-log entries for a student starting from *week_start* (ISO date).
-    Returns an empty list if nothing is found.
+    Returns an empty list if nothing is found or database is unavailable.
     """
-    db = get_db()
-    cursor = db.work_logs.find(
-        {"student_id": student_id, "week_start": {"$gte": week_start}},
-        {"_id": 0},
-    )
-    return await cursor.to_list(length=100)
+    if not _mongo_available:
+        return []
+    try:
+        db = get_db()
+        if db is None:
+            return []
+        cursor = db.work_logs.find(
+            {"student_id": student_id, "week_start": {"$gte": week_start}},
+            {"_id": 0},
+        )
+        return await cursor.to_list(length=100)
+    except Exception as exc:
+        log.warning("get_work_logs failed: %s", exc)
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -74,23 +111,30 @@ async def get_work_logs(student_id: str, week_start: str) -> list:
 async def search_scam_patterns(keywords: list[str]) -> list:
     """
     Full-text / keyword search against known scam patterns.
-    Falls back gracefully if a text index is not configured.
+    Falls back gracefully if MongoDB is unavailable.
     """
-    db = get_db()
+    if not _mongo_available:
+        return []
     try:
-        cursor = db.scam_patterns.find(
-            {"$text": {"$search": " ".join(keywords)}},
-            {"_id": 0, "score": {"$meta": "textScore"}},
-        ).sort([("score", {"$meta": "textScore"})])
-        return await cursor.to_list(length=20)
-    except Exception:
-        # If text index doesn't exist, fall back to a simple regex search.
-        pattern = "|".join(keywords)
-        cursor = db.scam_patterns.find(
-            {"description": {"$regex": pattern, "$options": "i"}},
-            {"_id": 0},
-        )
-        return await cursor.to_list(length=20)
+        db = get_db()
+        if db is None:
+            return []
+        try:
+            cursor = db.scam_patterns.find(
+                {"$text": {"$search": " ".join(keywords)}},
+                {"_id": 0, "score": {"$meta": "textScore"}},
+            ).sort([("score", {"$meta": "textScore"})])
+            return await cursor.to_list(length=20)
+        except Exception:
+            pattern = "|".join(keywords)
+            cursor = db.scam_patterns.find(
+                {"description": {"$regex": pattern, "$options": "i"}},
+                {"_id": 0},
+            )
+            return await cursor.to_list(length=20)
+    except Exception as exc:
+        log.warning("search_scam_patterns failed: %s", exc)
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -99,9 +143,17 @@ async def search_scam_patterns(keywords: list[str]) -> list:
 
 async def get_emergency_resources(city: str) -> list:
     """Return support resources (legal aid, housing, mental-health) for a city."""
-    db = get_db()
-    cursor = db.emergency_resources.find(
-        {"city": {"$regex": city, "$options": "i"}},
-        {"_id": 0},
-    )
-    return await cursor.to_list(length=50)
+    if not _mongo_available:
+        return []
+    try:
+        db = get_db()
+        if db is None:
+            return []
+        cursor = db.emergency_resources.find(
+            {"city": {"$regex": city, "$options": "i"}},
+            {"_id": 0},
+        )
+        return await cursor.to_list(length=50)
+    except Exception as exc:
+        log.warning("get_emergency_resources failed: %s", exc)
+        return []

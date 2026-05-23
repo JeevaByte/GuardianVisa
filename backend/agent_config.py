@@ -1,10 +1,13 @@
 """
-agent_config.py – Vertex AI GenerativeModel configuration for GuardianVisa.
+agent_config.py – LLM model configuration for GuardianVisa.
+
+Supports both Vertex AI (GCP service account) and Google AI Gemini API
+(GOOGLE_API_KEY) depending on which env vars are set.
 
 Exports:
     get_agent_model() -> GenerativeModel
-        Returns a fully configured Gemini-1.5-Pro model with all five
-        GuardianVisa tools registered and a detailed system prompt loaded.
+        Returns a fully configured Gemini model with all five GuardianVisa
+        tools registered and a detailed system prompt loaded.
 """
 
 import logging
@@ -16,8 +19,6 @@ load_dotenv()
 
 log = logging.getLogger(__name__)
 
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "")
-GCP_LOCATION = os.getenv("GCP_LOCATION", "us-central1")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-pro")
 
 # ---------------------------------------------------------------------------
@@ -88,27 +89,37 @@ everything else.
 
 def get_agent_model():
     """
-    Initialise Vertex AI and return a GenerativeModel with all GuardianVisa
-    tools registered.
+    Initialise the LLM (Vertex AI or Gemini API key) and return a model with
+    all GuardianVisa tools registered.
 
-    Returns None if Vertex AI is not configured (no GCP_PROJECT_ID).
+    Returns None if neither GCP_PROJECT_ID nor GOOGLE_API_KEY is set.
     """
-    if not GCP_PROJECT_ID:
-        log.warning("GCP_PROJECT_ID not set – Vertex AI model unavailable.")
+    from tools import get_all_declarations  # noqa: PLC0415
+    import llm  # noqa: PLC0415
+
+    api_key = os.getenv("GOOGLE_API_KEY")
+    project = os.getenv("GCP_PROJECT_ID")
+
+    if not api_key and not project:
+        log.warning("Neither GOOGLE_API_KEY nor GCP_PROJECT_ID set – LLM unavailable.")
         return None
 
     try:
-        import vertexai  # noqa: PLC0415
-        from vertexai.generative_models import GenerativeModel, Tool  # noqa: PLC0415
-
         from tools import get_all_declarations  # noqa: PLC0415
+        import llm  # noqa: PLC0415
 
-        vertexai.init(project=GCP_PROJECT_ID, location=GCP_LOCATION)
+        decls = get_all_declarations()
 
-        # Bundle all five FunctionDeclarations into a single Tool object.
-        guardian_tool = Tool(function_declarations=get_all_declarations())
+        if llm.is_vertex_ai():
+            from vertexai.generative_models import Tool as VertexTool
+            guardian_tool = VertexTool(function_declarations=decls)
+        else:
+            from google.genai import types
+            guardian_tool = types.Tool(function_declarations=[
+                types.FunctionDeclaration(**d) for d in decls
+            ])
 
-        model = GenerativeModel(
+        model = llm.get_model(
             GEMINI_MODEL,
             tools=[guardian_tool],
             system_instruction=SYSTEM_PROMPT,

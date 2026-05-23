@@ -10,14 +10,31 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![OSI Approved](https://img.shields.io/badge/OSI-Approved%20License-blue?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](CONTRIBUTING.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg?style=for-the-badge)](CODE_OF_CONDUCT.md)
 
 ---
 
-## 💔 Meet Priya
+## 💔 Real Students. Real Risk. Real Protection.
 
-Priya is a Computer Science master's student on an F-1 visa. It's Week 9 of the semester and she just got laid off from her on-campus job. She doesn't know she has exactly **60 days** before she falls out of status. She doesn't know the "immigration consultant" who emailed her last night is running a scam that has already stolen $12,000 from three students in her building. She doesn't know that if she misses one form, her student visa — and her dream of staying in the U.S. — is gone.
+These are the students GuardianVisa was built for.
 
-**GuardianVisa knows. And it tells her first.**
+| # | Name | Country | Visa | Situation |
+|---|------|---------|------|-----------|
+| 1 | **Ananya Krishnan** | 🇮🇳 India | F-1 | Data Science master's student who unknowingly exceeded work hours during an unpaid internship |
+| 2 | **Lucas Ferreira** | 🇧🇷 Brazil | J-1 | Exchange student targeted by a fraudulent "urgent visa renewal" text message |
+| 3 | **Hana Yoshida** | 🇯🇵 Japan | F-1 | Biology PhD candidate whose advisor is pushing her to defer, risking her status timeline |
+| 4 | **Omar Khalil** | 🇯🇴 Jordan | F-1 | Electrical engineering student who received a suspicious recruiter email offering cash jobs |
+| 5 | **Ngozi Okonkwo** | 🇳🇬 Nigeria | M-1 | Culinary arts student unsure whether switching schools will violate her M-1 conditions |
+| 6 | **Zhang Wei** | 🇨🇳 China | F-1 | Finance MBA student whose SEVIS record was incorrectly terminated by an admin error |
+| 7 | **Isabella Romero** | 🇨🇴 Colombia | J-2 | Spouse on J-2 who wants to start a side business but doesn't know if it's allowed |
+| 8 | **Vikram Reddy** | 🇮🇳 India | OPT | Software engineer on OPT who received a job offer from a company not registered with E-Verify |
+| 9 | **Amira Benali** | 🇩🇿 Algeria | F-1 | Pre-med student who lost her housing scholarship and faces potential enrolment gap |
+| 10 | **Alexei Petrov** | 🇷🇺 Russia | F-1 | Aerospace PhD student whose funding was cut mid-semester with no guidance on next steps |
+
+**GuardianVisa knows the risks they face. And it tells them first.**
 
 ---
 
@@ -79,29 +96,48 @@ User Query
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local)
+
+**Prerequisites:** Python 3.11+, Node.js 18+, MongoDB running locally
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/your-org/guardianvisa.git
-cd guardianvisa
+git clone https://github.com/JeevaByte/GuardianVisa.git
+cd GuardianVisa
 
-# 2. Copy environment variables
+# 2. Set up environment variables
 cp .env.example .env
-# Fill in GOOGLE_CLOUD_PROJECT, MONGODB_URI, GEMINI_API_KEY
-
-# 3. Seed the database
-cd data && python seed_mongodb.py && cd ..
-
-# 4. Launch everything
-docker-compose up --build
+# Edit .env and fill in: MONGODB_URI=mongodb://localhost:27017/guardianvisa, GEMINI_API_KEY
 ```
 
-| Service  | URL                   |
-|----------|-----------------------|
-| Frontend | http://localhost:3000 |
-| Backend  | http://localhost:8000 |
+**Backend**
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Seed the database
+cd ../data && python seed_mongodb.py && cd ../backend
+
+# Start the API server
+uvicorn main:app --reload --port 8000
+```
+
+**Frontend** *(open a new terminal)*
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+| Service  | URL                        |
+|----------|----------------------------|
+| Frontend | http://localhost:3000      |
+| Backend  | http://localhost:8000      |
 | API Docs | http://localhost:8000/docs |
+
+> **Tip:** You can also run everything with Docker: `docker-compose up --build`
 
 ---
 
@@ -122,11 +158,11 @@ The student describes their situation. The **Emergency Plan Agent** identifies t
 
 | Layer | Technology |
 |---|---|
-| AI Orchestration | Google Cloud Vertex AI · Gemini 1.5 Pro |
-| Backend | FastAPI · Python 3.11 · LangChain Agents |
-| Database | MongoDB Atlas (multi-collection) |
+| AI Orchestration | Gemini 1.5 Pro (via API) · LangChain Agents |
+| Backend | FastAPI · Python 3.11 |
+| Database | MongoDB (local) |
 | Frontend | React 18 · Vite · Tailwind CSS |
-| Infra | Docker · Google Cloud Run |
+| Infra | Docker · docker-compose |
 | Auth | JWT (demo mode: pre-seeded student profiles) |
 
 ---
@@ -139,7 +175,6 @@ guardianvisa/
 ├── frontend/         # React + Tailwind UI
 ├── data/             # MongoDB seed scripts + JSON fixtures
 ├── docs/             # Architecture diagrams + sequence flows
-├── deploy/           # Cloud Run deployment configs
 └── docker-compose.yml
 ```
 
@@ -159,6 +194,24 @@ GuardianVisa is an **educational risk-awareness tool**, not legal advice. All sc
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions of all kinds — new visa rules, scam patterns, bug fixes, translations, and docs!
+
+- 📖 Read the [Contributing Guide](CONTRIBUTING.md)
+- 🐛 [Report a bug](../../issues/new?template=bug_report.md)
+- 💡 [Request a feature](../../issues/new?template=feature_request.md)
+- 🔒 [Report a security issue](SECURITY.md)
+- 📜 [Code of Conduct](CODE_OF_CONDUCT.md)
+
+---
+
 ## 📄 License
 
-[MIT](LICENSE) © 2026 GuardianVisa Contributors
+GuardianVisa is released under the **[MIT License](LICENSE)** — an [OSI-approved](https://opensource.org/licenses/MIT) open source license.
+
+```
+MIT License © 2026 GuardianVisa Contributors
+```
+
+You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software. See [LICENSE](LICENSE) for the full text.

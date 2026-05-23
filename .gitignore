@@ -22,6 +22,9 @@ build/
 .env.*
 !.env.example
 
+# Service account keys
+**/service-account.json
+
 # OS
 .DS_Store
 Thumbs.db

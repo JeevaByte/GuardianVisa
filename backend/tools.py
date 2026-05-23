@@ -1,10 +1,10 @@
 """
-tools.py – GuardianVisa Vertex AI tool definitions.
+tools.py – GuardianVisa tool definitions.
 
 Each tool consists of:
-  1. A FunctionDeclaration  – registered with the GenerativeModel so Gemini
-     knows when and how to call it.
-  2. An async handler       – the Python function that actually executes the
+  1. A JSON-schema dict – registered with the LLM so Gemini knows when and
+     how to call it.
+  2. An async handler    – the Python function that actually executes the
      tool and returns a JSON-serialisable dict.
 """
 
@@ -21,30 +21,20 @@ GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "")
 GCP_LOCATION = os.getenv("GCP_LOCATION", "us-central1")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-pro")
 
-# ---------------------------------------------------------------------------
-# Lazy Vertex AI import helper
-# ---------------------------------------------------------------------------
-
-def _get_function_declaration_class():
-    """Import FunctionDeclaration only when Vertex AI is available."""
-    from vertexai.generative_models import FunctionDeclaration  # noqa: PLC0415
-    return FunctionDeclaration
-
 
 # ---------------------------------------------------------------------------
 # Tool 1 – get_student_profile
 # ---------------------------------------------------------------------------
 
 def make_get_student_profile_declaration():
-    """Return the FunctionDeclaration for get_student_profile."""
-    FunctionDeclaration = _get_function_declaration_class()
-    return FunctionDeclaration(
-        name="get_student_profile",
-        description=(
+    """Return the tool declaration dict for get_student_profile."""
+    return {
+        "name": "get_student_profile",
+        "description": (
             "Retrieves a student's profile including visa type, work hours this "
             "week, and term dates. Call this first whenever a student_id is available."
         ),
-        parameters={
+        "parameters": {
             "type": "object",
             "properties": {
                 "student_id": {
@@ -54,7 +44,7 @@ def make_get_student_profile_declaration():
             },
             "required": ["student_id"],
         },
-    )
+    }
 
 
 async def handle_get_student_profile(student_id: str) -> dict:
@@ -113,16 +103,15 @@ async def handle_get_student_profile(student_id: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def make_check_visa_hours_declaration():
-    """Return the FunctionDeclaration for check_visa_hours."""
-    FunctionDeclaration = _get_function_declaration_class()
-    return FunctionDeclaration(
-        name="check_visa_hours",
-        description=(
+    """Return the tool declaration dict for check_visa_hours."""
+    return {
+        "name": "check_visa_hours",
+        "description": (
             "Checks if accepting proposed work hours would violate the student's "
             "visa conditions. Returns risk level, violation flag, and the specific "
             "rule being breached."
         ),
-        parameters={
+        "parameters": {
             "type": "object",
             "properties": {
                 "current_hours": {
@@ -149,7 +138,7 @@ def make_check_visa_hours_declaration():
                 "is_term_time",
             ],
         },
-    )
+    }
 
 
 async def handle_check_visa_hours(
@@ -223,16 +212,15 @@ async def handle_check_visa_hours(
 # ---------------------------------------------------------------------------
 
 def make_scan_scam_signals_declaration():
-    """Return the FunctionDeclaration for scan_scam_signals."""
-    FunctionDeclaration = _get_function_declaration_class()
-    return FunctionDeclaration(
-        name="scan_scam_signals",
-        description=(
+    """Return the tool declaration dict for scan_scam_signals."""
+    return {
+        "name": "scan_scam_signals",
+        "description": (
             "Analyses text for accommodation or job scam indicators by matching "
             "against known scam patterns stored in MongoDB. Returns a risk score, "
             "matched patterns, red flags, and actionable advice."
         ),
-        parameters={
+        "parameters": {
             "type": "object",
             "properties": {
                 "text": {
@@ -246,7 +234,7 @@ def make_scan_scam_signals_declaration():
             },
             "required": ["text"],
         },
-    )
+    }
 
 
 async def handle_scan_scam_signals(text: str, city: Optional[str] = None) -> dict:
@@ -330,15 +318,14 @@ async def handle_scan_scam_signals(text: str, city: Optional[str] = None) -> dic
 # ---------------------------------------------------------------------------
 
 def make_get_emergency_resources_declaration():
-    """Return the FunctionDeclaration for get_emergency_resources."""
-    FunctionDeclaration = _get_function_declaration_class()
-    return FunctionDeclaration(
-        name="get_emergency_resources",
-        description=(
+    """Return the tool declaration dict for get_emergency_resources."""
+    return {
+        "name": "get_emergency_resources",
+        "description": (
             "Retrieves emergency support resources for a student's city including "
             "food banks, hardship funds, legal advice, housing, and university support."
         ),
-        parameters={
+        "parameters": {
             "type": "object",
             "properties": {
                 "city": {
@@ -356,7 +343,7 @@ def make_get_emergency_resources_declaration():
             },
             "required": ["city"],
         },
-    )
+    }
 
 
 async def handle_get_emergency_resources(
@@ -405,16 +392,15 @@ async def handle_get_emergency_resources(
 # ---------------------------------------------------------------------------
 
 def make_draft_safe_response_declaration():
-    """Return the FunctionDeclaration for draft_safe_response."""
-    FunctionDeclaration = _get_function_declaration_class()
-    return FunctionDeclaration(
-        name="draft_safe_response",
-        description=(
+    """Return the tool declaration dict for draft_safe_response."""
+    return {
+        "name": "draft_safe_response",
+        "description": (
             "Drafts a polite, professional response message for the student to send "
             "to their employer, landlord, university, or a government body. Use this "
             "when the student needs help composing a safe and legally sound reply."
         ),
-        parameters={
+        "parameters": {
             "type": "object",
             "properties": {
                 "situation": {
@@ -441,7 +427,7 @@ def make_draft_safe_response_declaration():
             },
             "required": ["situation", "recipient_type", "tone"],
         },
-    )
+    }
 
 
 async def handle_draft_safe_response(
@@ -493,24 +479,17 @@ Return ONLY valid JSON with this exact schema:
 
     # Attempt a direct Gemini call for this tool.
     draft_text = None
-    if GCP_PROJECT_ID:
-        try:
-            import vertexai  # noqa: PLC0415
-            from vertexai.generative_models import GenerationConfig, GenerativeModel  # noqa: PLC0415
-
-            vertexai.init(project=GCP_PROJECT_ID, location=GCP_LOCATION)
-            model = GenerativeModel(GEMINI_MODEL)
-            resp = model.generate_content(
-                prompt,
-                generation_config=GenerationConfig(
-                    temperature=0.3,
-                    max_output_tokens=800,
-                    response_mime_type="application/json",
-                ),
-            )
-            draft_text = resp.text
-        except Exception as exc:
-            log.warning("Gemini call in draft_safe_response failed: %s", exc)
+    try:
+        import llm  # noqa: PLC0415
+        model = llm.get_model()
+        config = llm.make_generation_config(
+            temperature=0.3,
+            max_output_tokens=800,
+        )
+        resp = llm.generate_content(model, prompt, generation_config=config)
+        draft_text = llm.extract_text(resp)
+    except Exception as exc:
+        log.warning("Gemini call in draft_safe_response failed: %s", exc)
 
     if draft_text:
         try:
@@ -547,7 +526,7 @@ Return ONLY valid JSON with this exact schema:
 # ---------------------------------------------------------------------------
 
 def get_all_declarations() -> list:
-    """Return all five FunctionDeclaration objects for registration with Gemini."""
+    """Return all five tool declaration dicts for registration with the LLM."""
     return [
         make_get_student_profile_declaration(),
         make_check_visa_hours_declaration(),

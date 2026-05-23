@@ -29,7 +29,7 @@ export default function ScamScanner({ data }) {
   const flags = data.red_flags || []
   const patterns = data.matched_patterns || []
   const advice = data.advice || ''
-  const score = data.scam_score ?? null
+  const score = data.risk_score ?? null
 
   return (
     <div className={`rounded-xl border-2 ${cfg.bg} ${cfg.border} overflow-hidden shadow-2xl ${isHighRisk ? 'animate-pulse' : ''}`}>
