@@ -1,104 +1,91 @@
-import { useState } from 'react'
-import StudentProfile from './components/StudentProfile.jsx'
-import ChatInterface from './components/ChatInterface.jsx'
-import RiskAlert from './components/RiskAlert.jsx'
-import ScamScanner from './components/ScamScanner.jsx'
+import { useEffect, useMemo, useState } from 'react'
+import Sidebar from './components/layout/Sidebar'
+import Topbar from './components/layout/Topbar'
+import DashboardPage from './pages/DashboardPage'
+import VisaRiskCenterPage from './pages/VisaRiskCenterPage'
+import ScamScannerPage from './pages/ScamScannerPage'
+import EmergencyRecoveryPage from './pages/EmergencyRecoveryPage'
+import ActivityMonitorPage from './pages/ActivityMonitorPage'
+import StudentTimelinePage from './pages/StudentTimelinePage'
+import AlertsCenterPage from './pages/AlertsCenterPage'
+import { analyzeRisk, getAlerts } from './api/client'
+import { useActivityStream } from './hooks/useActivityStream'
 
-const MOCK_STUDENT = {
-  name: 'Priya Sharma',
-  university: 'University of Melbourne',
-  visaType: 'Student Visa (Subclass 500)',
-  visaExpiry: '2025-11-14',
-  currentHours: 18,
-  hoursLimit: 20,
-  termStart: '2025-02-24',
-  termEnd: '2025-06-20',
-}
+function PlannerConsole({ onAnalyzed, loading, setLoading }) {
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
-const TABS = [
-  { id: 'visa', label: '🛡️ Visa Guard' },
-  { id: 'scam', label: '🔍 Scam Scanner' },
-  { id: 'emergency', label: '🚨 Emergency Plan' },
-]
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('visa')
-  const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
-
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId)
-    setResult(null)
+  const submit = async () => {
+    if (!message.trim()) return
+    setLoading(true)
+    setError('')
+    try {
+      const response = await analyzeRisk({ userId: 'priya_sharma_demo', message })
+      onAnalyzed(response?.planner_state || null)
+    } catch (err) {
+      setError(err?.response?.data?.detail || 'Failed to run planner analysis.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
-      {/* Header */}
-      <header className="bg-navy-900 border-b border-slate-700 shadow-lg"
-        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
-        <div className="max-w-4xl mx-auto px-4 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl select-none">🛡️</span>
-            <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-white">
-                GuardianVisa
-              </h1>
-              <p className="text-xs text-slate-400 font-medium tracking-widest uppercase mt-0.5">
-                Not a chatbot. A guardian.
-              </p>
-            </div>
-          </div>
-          <div className="hidden sm:flex items-center gap-2 bg-slate-800 rounded-full px-4 py-1.5 border border-slate-700">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-            <span className="text-xs text-slate-300 font-medium">AI Agents Active</span>
-          </div>
-        </div>
-      </header>
+    <div className="p-4 rounded-xl border border-slate-800 bg-slate-900 space-y-3">
+      <div className="text-sm font-semibold text-white">Planner Console</div>
+      <textarea
+        className="w-full min-h-[100px] rounded-lg border border-slate-700 bg-slate-950 text-slate-200 p-3 text-sm"
+        placeholder="Describe your visa/scam/emergency situation for autonomous analysis..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <div className="flex items-center gap-3">
+        <button
+          onClick={submit}
+          disabled={loading || !message.trim()}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+            loading || !message.trim() ? 'bg-slate-700 text-slate-400' : 'bg-blue-600 text-white hover:bg-blue-500'
+          }`}
+        >
+          {loading ? 'Analyzing...' : 'Run Planner'}
+        </button>
+        {error && <span className="text-sm text-red-300">{error}</span>}
+      </div>
+    </div>
+  )
+}
 
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Student Profile */}
-        <StudentProfile student={MOCK_STUDENT} />
+export default function App() {
+  const [page, setPage] = useState('dashboard')
+  const [latestState, setLatestState] = useState(null)
+  const [alerts, setAlerts] = useState([])
+  const [loading, setLoading] = useState(false)
+  const { events, connected } = useActivityStream()
 
-        {/* Tab Navigation */}
-        <div className="flex gap-2 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+  useEffect(() => {
+    getAlerts('priya_sharma_demo').then(setAlerts).catch(() => setAlerts([]))
+  }, [latestState])
 
-        {/* Chat Interface */}
-        <ChatInterface
-          mode={activeTab}
-          onResult={setResult}
-          onLoading={setLoading}
-          loading={loading}
-        />
+  const pageNode = useMemo(() => {
+    if (page === 'dashboard') return <DashboardPage latestState={latestState} />
+    if (page === 'visa-risk-center') return <VisaRiskCenterPage latestState={latestState} />
+    if (page === 'scam-scanner') return <ScamScannerPage latestState={latestState} />
+    if (page === 'emergency-recovery') return <EmergencyRecoveryPage latestState={latestState} />
+    if (page === 'activity-monitor') return <ActivityMonitorPage events={events} />
+    if (page === 'student-timeline') return <StudentTimelinePage latestState={latestState} />
+    if (page === 'alerts-center') return <AlertsCenterPage alerts={alerts} />
+    return <DashboardPage latestState={latestState} />
+  }, [alerts, events, latestState, page])
 
-        {/* Result Display */}
-        {result && !loading && (
-          <div className="animate-fade-in">
-            {activeTab === 'scam' ? (
-              <ScamScanner data={result} />
-            ) : (
-              <RiskAlert data={result} mode={activeTab} />
-            )}
-          </div>
-        )}
-      </main>
-
-      <footer className="max-w-4xl mx-auto px-4 py-8 text-center text-xs text-slate-600 border-t border-slate-800 mt-8">
-        GuardianVisa · Hackathon Demo · AI outputs are guidance only, not legal advice.
-      </footer>
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 lg:flex">
+      <Sidebar page={page} onPageChange={setPage} />
+      <div className="flex-1">
+        <Topbar connected={connected} />
+        <main className="p-6 space-y-4">
+          <PlannerConsole onAnalyzed={setLatestState} loading={loading} setLoading={setLoading} />
+          {pageNode}
+        </main>
+      </div>
     </div>
   )
 }

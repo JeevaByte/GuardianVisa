@@ -94,6 +94,30 @@ User Query
 
 📐 Full architecture diagram → [`docs/01_system_architecture.md`](docs/01_system_architecture.md)
 
+### Platform v2 (Autonomous Multi-Agent)
+
+The backend now includes a production-style layered architecture under `backend/app`:
+
+- `api/` (routers)
+- `core/` (config, logging, security, middleware)
+- `repositories/` (MongoDB persistence for long-term memory and alerts)
+- `services/` (planner, memory, risk engine, RAG, monitoring, action engine)
+- `agents/` (visa, scam, emergency, legal, communication, notification, timeline monitoring)
+- `workflows/` (planner execution graph)
+
+New API capabilities:
+
+- `POST /api/analyze` planner orchestration with memory + risk scoring + action synthesis
+- `GET /api/activity/stream` real-time activity stream (SSE)
+- `GET /api/alerts` open alerts center feed
+- `GET /api/risk/preview` weighted risk simulation endpoint
+
+Legacy compatibility endpoints remain available:
+
+- `POST /api/check`
+- `POST /api/scan-scam`
+- `POST /api/emergency`
+
 ---
 
 ## 🚀 Quick Start (Local)
